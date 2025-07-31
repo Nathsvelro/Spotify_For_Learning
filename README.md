@@ -3,7 +3,7 @@
 
 Stack elegido:
 - **Backend**: Python (FastAPI), RQ (cola), Redis, Postgres, SQLAlchemy, Pydantic, OpenAI (LLM), ElevenLabs (TTS)
-- **Frontend**: Next.js (Web primero)
+- **Frontend**: Next.js 
 - **Idiomas**: Español e inglés
 
 ## Requisitos
