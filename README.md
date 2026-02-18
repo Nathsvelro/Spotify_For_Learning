@@ -1,52 +1,54 @@
-
 # Spotify for Learning — Starter Kit
 
-Stack elegido:
+Stack:
 - **Backend**: Python (FastAPI), RQ (cola), Redis, Postgres, SQLAlchemy, Pydantic, OpenAI (LLM), ElevenLabs (TTS)
-- **Frontend**: Next.js 
+- **Frontend**: Next.js
 - **Idiomas**: Español e inglés
 
-## Requisitos
-- Python 3.11+
-- Node 20+
-- Docker y docker-compose (para Postgres y Redis)
+## Objetivo del PoC
+
+Esta app permite crear un podcast educativo en base a lo que solicite el usuario (tema, nivel, idioma, tono y duración). Actualmente también incluye un botón para **simular** la publicación en Spotify (prueba de concepto).
 
 ## Puesta en marcha (local)
-1) Copia `.env.example` a `.env` en `backend/` y completa tus claves:
+
+1) Copia `.env.example` a `.env` en `BACKEND/` y completa tus claves:
    - `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`
-   - `ELEVENLABS_VOICE_ID_ES`, `ELEVENLABS_VOICE_ID_EN` (elige voces en ElevenLabs)
+   - `ELEVENLABS_VOICE_ID_ES`, `ELEVENLABS_VOICE_ID_EN`
 2) Levanta Postgres y Redis:
    ```bash
    docker compose up -d
    ```
 3) Backend:
    ```bash
-   cd backend
+   cd BACKEND
    python -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
-   # Crear tablas
-   python -m app.db_init
-   # Inicia API
-   uvicorn app.main:app --reload --port 8000
-   # En otra terminal, inicia el worker
+   python -m APP.db_init
+   uvicorn APP.main:app --reload --port 8000
+   ```
+4) Worker en otra terminal:
+   ```bash
+   cd BACKEND
+   source .venv/bin/activate
    rq worker -u $REDIS_URL lesson-generation
    ```
-4) Frontend:
+5) Frontend:
    ```bash
-   cd web
+   cd WEB
    npm install
    npm run dev
    ```
 
-- API corre en `http://localhost:8000`
-- Frontend corre en `http://localhost:3000` (configurado para apuntar al backend via `NEXT_PUBLIC_API_BASE`)
+- API: `http://localhost:8000`
+- Frontend: `http://localhost:3000`
 
 ## Flujo
-- POST `/api/lessons` con `{ topic, language, level, tone, duration_min }`
-- El worker genera el guion con OpenAI, sintetiza audio con ElevenLabs, guarda MP3 en `backend/static/audio/`, y actualiza el estado.
-- GET `/api/lessons/{id}` retorna metadatos y `audio_url` cuando esté listo.
 
-## Notas
-- Este starter guarda audio localmente para simplificar. Cambia a S3 si lo prefieres.
-- Asegura tus claves en `.env` (nunca subas claves a git).
-- La estructura está lista para extender con autenticación, RAG, y CDN.
+- `POST /api/lessons` con `{ topic, language, level, tone, duration_min }`.
+- El worker genera el guion, sintetiza audio, guarda MP3 local y actualiza estado.
+- `GET /api/lessons/{id}` retorna metadatos y `audio_url` cuando está listo.
+- Desde la UI, al terminar la generación, se puede pulsar **Publicar en Spotify (PoC)** para simular publicación con un ID ficticio.
+
+## Nota
+
+La integración real con Spotify for Podcasters/API oficial queda pendiente para una siguiente iteración.
